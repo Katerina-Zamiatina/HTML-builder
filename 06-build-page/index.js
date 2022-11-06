@@ -70,3 +70,50 @@ async function createBundleCss(source) {
 }
 
 createBundleCss(stylePath);
+
+// Create index.html from template.html
+
+const templatePath = path.join(__dirname, "template.html");
+const htmlDistPath = path.join(projectDistPath, "index.html");
+const componentsPath = path.join(__dirname, "components");
+
+let str = "";
+
+async function createHtml() {
+  try {
+    const data = fs.createReadStream(templatePath, "utf8");
+    const htmlDist = fs.createWriteStream(htmlDistPath);
+    const components = await fs.promises.readdir(componentsPath, {
+      withFileTypes: true,
+    });
+
+    data.on("data", (data) => {
+      str = data.toString();
+      const arr = [];
+      components.forEach((file) => {
+        const fileName = file.name.split(".").slice(0, 1).join(".");
+        const filePath = path.join(componentsPath, file.name);
+        const content = fs.createReadStream(filePath, "utf8");
+        arr.push(`{{${fileName}}}`);
+
+        content.forEach((file, idx) => {
+          const fileStream = fs.createReadStream(filePath, "utf8");
+          console.log(fileStream);
+          fileStream.on("data", (data) => {
+            if (str.includes(fileName)) {
+              str = str.replace(`{{${fileName}}}`, data);
+            }
+            console.log("STRING", str);
+            if (!arr.find((el) => str.includes(el))) {
+              htmlDist.write(str);
+            }
+          });
+        });
+      });
+    });
+  } catch (error) {
+    console.error("ERROR: ", error);
+  }
+}
+
+createHtml();
