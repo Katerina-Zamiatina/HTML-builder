@@ -1,5 +1,4 @@
 const fs = require("fs");
-
 const path = require("path");
 const chalk = require("chalk");
 
@@ -25,7 +24,7 @@ async function createBundleCss(source) {
       if (ext === "css") {
         const fileContent = fs.createReadStream(filePath);
         fileContent.on("data", (data) => {
-          let content = data.toString();
+          let content = data.toString() + "\n";
           bundleStream.write(content);
         });
       }
