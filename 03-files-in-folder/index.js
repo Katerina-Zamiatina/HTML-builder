@@ -36,7 +36,7 @@ showFilesList();
 //     await fs.readdir(folderPath, { withFileTypes: true }, (err, data) => {
 //       data.forEach((file) => {
 
-//         if (file.isFile()) {
+//         if (!file.isDirectory()) {
 //           const filePath = path.resolve(__dirname, "secret-folder", file.name);
 //           fs.stat(filePath, (err, stats) => {
 //             let fileInfo = [];
