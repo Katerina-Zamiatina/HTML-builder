@@ -8,15 +8,22 @@ async function copyDirectory(source, destination) {
   try {
     const entryFiles = await fs.readdir(source, { withFileTypes: true });
     await fs.mkdir(destination, { recursive: true });
+    const copy = await fs.readdir(copyDirPath);
+
+    if (copy) {
+        copy.forEach(async (file) => {
+          const filePath = path.join(destination, file);
+          await fs.unlink(filePath);
+        });
+      }
 
     entryFiles.forEach(async (entry) => {
       const entryPath = path.join(source, entry.name);
       const copyFilePath = path.join(destination, entry.name);
-
       if (entry.isDirectory()) {
-       await copyDirectory(entryPath, copyFilePath);
+        await copyDirectory(entryPath, copyFilePath);
       } else {
-       await fs.copyFile(entryPath, copyFilePath);
+        await fs.copyFile(entryPath, copyFilePath);
       }
     });
   } catch (error) {
@@ -25,7 +32,6 @@ async function copyDirectory(source, destination) {
 }
 
 copyDirectory(sourceDirPath, copyDirPath);
-
 
 // delete copyDir
 
