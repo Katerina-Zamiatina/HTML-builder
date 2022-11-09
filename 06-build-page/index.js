@@ -16,10 +16,35 @@ async function copyDirectory(source, destination) {
       withFileTypes: true,
     });
     await fs.promises.mkdir(destination, { recursive: true });
+    const copy = await fs.promises.readdir(destination, {
+      withFileTypes: true,
+    });
+
+    if (copy) {
+      copy.forEach(async (file) => {
+        const filePath = path.join(destination, file.name);
+
+        if (file.isDirectory()) {
+          const innerFile = await fs.promises.readdir(filePath, {
+            withFileTypes: true,
+          });
+          innerFile.forEach(async (el) => {
+            const elPath = path.join(filePath, el.name);
+            await fs.promises.unlink(elPath, async () => {
+              await fs.promises.rmdir(file);
+            });
+          });
+        } else {
+          await fs.promises.unlink(filePath);
+        }
+      });
+    }
 
     entryFiles.forEach(async (entry) => {
       const entryPath = path.join(source, entry.name);
       const assetsCopyPath = path.join(destination, entry.name);
+
+      // console.log(entry);
 
       if (entry.isDirectory()) {
         await copyDirectory(entryPath, assetsCopyPath);
@@ -98,12 +123,12 @@ async function createHtml() {
 
         content.forEach((file, idx) => {
           const fileStream = fs.createReadStream(filePath, "utf8");
-          console.log(fileStream);
+
           fileStream.on("data", (data) => {
             if (str.includes(fileName)) {
               str = str.replace(`{{${fileName}}}`, data);
             }
-            console.log("STRING", str);
+
             if (!arr.find((el) => str.includes(el))) {
               htmlDist.write(str);
             }
